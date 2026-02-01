@@ -1,0 +1,888 @@
+\documentclass{article}
+\usepackage{import}
+
+
+\title{Statisitcal Learning and Stochastic Processes}
+\author{Felix Céard-Falkenberg 7174020
+\\
+Yiquan Hu 2629526}
+
+\usepackage{homework} % See homework.sty %
+\usepackage{amsmath}
+\usepackage{amssymb} 
+\usepackage[utf8]{inputenc}
+\usepackage{todonotes}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{subfig}
+% \usepackage{minipage}
+
+\usepackage{kantlipsum}
+% \usepackage{showframe}
+\usepackage[bottom]{footmisc}
+
+
+\newcommand*\dif{\mathop{}\mathrm{d}}
+\newcommand{\stepandtag}{%
+  \refstepcounter{equation}%
+  \tag{\theequation}%
+}
+\newcommand{\var}{\ensuremath{\text{Var}}}
+\newcommand{\group}{\ensuremath{\text{Group}}}
+\newcommand{\piml}{\ensuremath{\pi_{ML}}}
+\newcommand{\variance}[1]{\ensuremath{\text{\small \textcolor{gray}{$\pm #1$}}}}
+% \newcommand{\variance}[1]{\text{\tiny\textcolor{gray}{$\pm$ #1}}}
+
+
+\begin{document}
+\section{Part A: Statistical Inference}
+\section*{Problem 1}
+\subsection*{(a)}
+\textit{Express $P(X_i = 1)$ as a function of $a$ and $\pi$.}
+
+We have
+\begin{align*}
+    P(X_i = 1) &= P(X_i = 1, \group = A) + P(X_i=1, \group = B) \\
+    &= P(X_i = 1\mid \group = A) \cdot P(\group = A) + P(X_i=1 \mid \group = B) \cdot P(\group = B) \\
+    &= a \cdot P(\group = A) + (1-a) \cdot P(\group = B) \\
+    &= a \cdot \pi + (1-a) \cdot (1-\pi)\;.
+\end{align*}
+Similarly, we have
+\begin{align*}
+    P(X_i = 0) &= P(X_i = 0, \group = A) + P(X_i=0, \group = B) \\
+    &= P(X_i = 0\mid \group = A) \cdot P(\group = A) + P(X_i=0 \mid \group = B) \cdot P(\group = B) \\
+    &= (1-a) \cdot P(\group = A) + a \cdot P(\group = B) \\
+    &= (1-a) \cdot \pi + a \cdot (1-\pi) \;.
+\end{align*}
+
+\textit{(Optional)}
+Because the random variable $X_i$ can only have 2 potential values, we can now easily check whether our expressions are correct as $P(X_i = 1) + P(X_i = 0) = 1$. We have
+\begin{align*}
+    P(X_i = 1) + P(X_i = 0) &= a \cdot \pi + (1-a) \cdot (1-\pi) + (1-a) \cdot \pi + a \cdot (1-\pi) \\
+    &= a \cdot \pi + (1-\pi) - a +\pi \cdot a + \pi - \pi \cdot a + a - \pi \cdot a \\
+    &= a \cdot \pi + 1-\pi + \pi - \pi \cdot a \\
+    &= 1\;.
+\end{align*}
+
+\subsection*{(b)}
+\textit{Give expressions for the joint probability of the observed data $X_1, X_2, \dots , X_n$, and the corresponding likelihood function and loglikelihood function.}
+
+We aim to express the computation for
+\begin{equation*}
+    P(X_1, X_2, \dots, X_n)\;.
+\end{equation*}
+
+Because we know that the $n$ samples are drawn with the i.i.d.\ assumption, it holds that
+\begin{equation*}
+    P(X_1, X_2, \dots, X_n) = \prod_{i=1}^{n} P(X_i)\;.
+\end{equation*}
+Hence,
+\begin{align*}
+    P(X_1, X_2, \dots, X_n) &= \prod_{i=1}^{n} P(X_i) \\
+    &= \prod_{i=1}^{n} \begin{cases}
+        P(X_i=1) & \text{if } X_i = 1 \\
+        P(X_i = 0) & \text{if } X_i = 0
+    \end{cases} \\
+    &= {P(X_i=1)}^{m} \cdot {P(X_i=0)}^{n-m} \\
+    &= {\left ( a \cdot \pi + (1-a) \cdot (1-\pi) \right )}^{m} \cdot {\left ( (1-a) \cdot \pi + a \cdot (1-\pi) \right )}^{n-m} 
+    % &= {\left ( a^m \cdot \pi^m + (1-a)^m \cdot (1-\pi)^m \right )} \cdot {\left ( (1-a)^{m} \cdot \pi^{m} + a^{m} \cdot (1-\pi)^{m} \right )} \\
+    \stepandtag \label{eq:likelihood_problem_1}
+\end{align*}
+is the likelihood function of the observed samples.
+
+Let us now derive the experession for the log likelihood of the data:
+\begin{align*}
+    \log P(X_1, X_2, \dots, X_n) &= \log \left [ {\left ( a \cdot \pi + (1-a) \cdot (1-\pi) \right )}^{m} \cdot {\left ( (1-a) \cdot \pi + a \cdot (1-\pi) \right )}^{n-m}\right ] \\
+    &= m \cdot \log {\left [ a \cdot \pi + (1-a) \cdot (1-\pi) \right ]} + (n - m) \cdot \log \left [ (1-a) \cdot \pi + a \cdot (1-\pi) \right ] \stepandtag \label{eq:log_likelihood_problem_1}
+\end{align*}
+
+
+\subsection*{(c)}
+\textit{Derive an expression for the maximum likelihood estimator $\pi_{ML}$ of $\pi$.}
+
+
+We now aim to estimate $\pi$. To this end, we denoted the estimated value for $\pi$ as $\pi_{ML}$ in Equation~\ref{eq:log_likelihood_problem_1} and derive the log likelihood w.r.t. $\pi_{ML}$. We have
+\begin{align*}
+    &\frac{\partial}{\partial \pi_{ML}} \log P(X_1, X_2, \dots, X_n) \\
+    =\ & \frac{\partial}{\partial \pi_{ML}} m \cdot \log {\left [ a \cdot \pi_{ML} + (1-a) \cdot (1-\pi_{ML}) \right ]} + (n - m) \cdot \log \left [ (1-a) \cdot \pi_{ML} + a \cdot (1-\pi_{ML}) \right ] \\
+    =\ & m \cdot \frac{1}{a \cdot \pi_{ML} + (1-a) \cdot (1-\pi_{ML})} \cdot (a - (1-a))
+    + (n - m) \cdot \frac{1}{(1-a) \cdot \pi_{ML} + a \cdot (1-\pi_{ML})} \cdot ((1-a) - a)\;.
+\end{align*}
+
+We now find the critical points by setting the gradient to zero:
+\begin{align*}
+    \frac{\partial}{\partial \pi_{ML}} \log P(X_1, X_2, \dots, X_n) &\overset{!}{=} 0 \\
+    m \cdot \frac{1}{a \cdot \pi_{ML} + (1-a) \cdot (1-\pi_{ML})} \cdot (a - (1-a))
+    + (n - m) \cdot \frac{1}{(1-a) \cdot \piml + a \cdot (1-\piml)} \cdot ((1-a) - a) &= 0 \stepandtag \label{eq:first_critical_point}
+\end{align*}
+where Equation~\ref{eq:first_critical_point} holds whenever $(1-a) = a$ as both additive terms are zero. It is easy to see that $a=0.5$ is the only real solution for this equation. However, as we are interested in the maximum likelihood estimator of $\pi_{ML}$, setting $a=0.5$ prohibits us from finding the maximum value.
+This is because if $a=0.5$, we have $P(X_i = 1) = 0.5 = P(X_i = 0)$, and therefore the likelihood function is constant, regardless of the value of $\pi$. Therefore, we need to consider the case where $a\neq 0.5$.
+
+We now solve Equation~\ref{eq:first_critical_point} for $\piml$ while assuming that $q\neq 0.5$. 
+We have:
+\begin{align*}
+    m \cdot \frac{1}{a \cdot \pi_{ML} + (1-a) \cdot (1-\pi_{ML})} \cdot (a - (1-a))
+    &= -(n - m) \cdot \frac{1}{(1-a) \cdot \pi_{ML} + a \cdot (1-\pi_{ML})} \cdot ((1-a) - a) \\
+    m \cdot \frac{1}{a \cdot \pi_{ML} + (1-a) \cdot (1-\pi_{ML})} \cdot (a - (1-a))
+    &= (n - m) \cdot \frac{1}{(1-a) \cdot \pi_{ML} + a \cdot (1-\pi_{ML})} \cdot (a - (1-a)) \\
+    m \cdot \frac{1}{a \cdot \pi_{ML} + (1-a) \cdot (1-\pi_{ML})}
+    &= (n - m) \cdot \frac{1}{(1-a) \cdot \pi_{ML} + a \cdot (1-\pi_{ML})} \\
+    m \cdot \frac{1}{(2a-1) \cdot \pi_{ML} + 1 - a} 
+    &= (n - m) \cdot \frac{1}{(1 - 2a) \cdot \piml + a} \\
+    m \cdot \frac{1}{(2a-1) \cdot \pi_{ML} + 1 - a}
+    &= (n - m) \cdot \frac{1}{a - (2a - 1) \cdot \piml} \\
+    m \cdot \left( a - (2a - 1) \cdot \piml \right) 
+    &= (n - m) \cdot \left( (2a-1) \cdot \piml + 1 - a \right)  \\
+    am - (2a -1)\cdot m \cdot \piml
+    &= (n - m) \cdot (2a-1) \cdot \piml + (n - m) \cdot(1 -a)  \\
+    am - (n - m) \cdot(1 -a)
+    &= (n - m) \cdot (2a-1) \cdot \piml + (2a -1)\cdot m \cdot \piml \\
+    am - (n - m) \cdot(1 -a)
+    &= \piml \cdot (2a -1) ((n - m) + m)  \\
+    am - (n - m) + a \cdot n - am
+    &= \piml \cdot (2a -1) (n)  \\
+    n \cdot (a - 1) + m
+    &= \piml \cdot (2a -1) (n)  \\
+    \frac{n \cdot (a - 1) + m}{(2a -1) (n)}
+    &= \piml \\
+    \frac{n \cdot (a - 1) + m}{n} \cdot \frac{1}{2a -1}
+    &= \piml \\
+    \left( a - 1 + \frac{m}{n} \right) \cdot \frac{1}{2a -1}
+    &= \piml \stepandtag \label{eq:ml_estimator_problem_1}
+\end{align*}
+
+We verify that this is indeed a maximum by plugging the result from Equation~\ref{eq:ml_estimator_problem_1} into the second derivative. 
+For ease of notation, we will use $b = (1-a)$. We have
+% $$
+% \frac{d}{d\pi}\left[\frac{1}{u}\right] = -\frac{u'}{u^2}
+% $$
+% $$m(a-(1-a)) \cdot \left(\mathbf{-}\frac{a-(1-a)}{u^2}\right) = \mathbf{-}m \cdot \frac{(a-(1-a))^2}{u^2}$$
+% $$\frac{\partial^2}{\partial \pi_{ML}^2} \log P = -m \cdot \frac{(2a-1)^2}{(a\pi_{ML} + (1-a)(1-\pi_{ML}))^2} - (n-m) \cdot \frac{(2a-1)^2}{((1-a)\pi_{ML} + a(1-\pi_{ML}))^2}$$
+{
+\allowdisplaybreaks
+\begin{align*}
+    &\frac{\partial^2}{\partial {\pi_{ML}}^2} \log P(X_1, X_2, \dots, X_n)\\
+    =\ & \frac{\partial}{\partial {\pi_{ML}}} m \cdot (a - (1-a)) \cdot \frac{1}{a \cdot \pi_{ML} + (1-a) \cdot (1-\pi_{ML})}
+    + (n - m) \cdot ((1-a) - a) \cdot \frac{1}{(1-a) \cdot \pi_{ML} + a \cdot (1-\pi_{ML})} \\
+    =\ & -m \cdot (a - (1-a)) \cdot \frac{1}{\left( a \cdot \pi_{ML} + (1-a) \cdot (1-\pi_{ML}) \right)^2} \cdot \left( a - (1-a) \right) \\
+    &- (n - m) \cdot ((1-a) - a) \cdot \frac{1}{\left( (1-a) \cdot \pi_{ML} + a \cdot (1-\pi_{ML}) \right)^2} \cdot \left( (1-a) -a \right) \\
+    =\ & -m \cdot (a - (1-a)) \cdot \frac{1}{\left( a \cdot \pi_{ML} + (1-a) \cdot (1-\pi_{ML}) \right)^2} \cdot \left( a - (1-a) \right) \\
+    &- (n - m) \cdot (a-(1-a)) \cdot \frac{1}{\left( (1-a) \cdot \pi_{ML} + a \cdot (1-\pi_{ML}) \right)^2} \cdot \left( a - (1-a) \right) \\
+    =\ & - m \cdot {(a - (1-a))}^2 \cdot \frac{1}{\left( a \cdot \pi_{ML} + (1-a) \cdot (1-\pi_{ML}) \right)^2} - (n - m) \cdot {(a-(1-a))}^2 \cdot \frac{1}{\left( (1-a) \cdot \pi_{ML} + a \cdot (1-\pi_{ML}) \right)^2} \\
+    =\ & -m \cdot {(a - b)}^2 \cdot \frac{1}{\left( a \cdot \pi_{ML} + b \cdot (1-\pi_{ML}) \right)^2} - (n - m) \cdot {(a-b)}^2 \cdot \frac{1}{\left( b \cdot \pi_{ML} + a \cdot (1-\pi_{ML}) \right)^2} \\
+    \leq \ & - m \cdot \frac{1}{\left( a \cdot \pi_{ML} + b \cdot (1-\pi_{ML}) \right)^2} - (n - m) \cdot \frac{1}{\left( b \cdot \pi_{ML} + a \cdot (1-\pi_{ML}) \right)^2} \\
+    = \ & - m \cdot \frac{1}{\left( a \cdot \pi_{ML} + (1-a) \cdot (1-\pi_{ML}) \right)^2} - (n - m) \cdot \frac{1}{\left( (1-a) \cdot \pi_{ML} + a \cdot (1-\pi_{ML}) \right)^2} \\
+    =\ & -m \cdot \alpha - (n - m) \cdot \beta \\
+    \leq\ & -m -(n-m) \\
+    \leq \ & 0
+    % = \ & - m \cdot \frac{1}{\left( a \cdot \pi_{ML} + (1-a) \cdot (1-\pi_{ML}) \right)^2} - (n - m) \cdot \frac{1}{\left( (1-a) \cdot \pi_{ML} + a \cdot (1-\pi_{ML}) \right)^2} \\
+    % = \ & - m \cdot \frac{1}{\left( a \cdot \pi_{ML} + 1 - \piml - a - a \piml \right)^2} - (n - m) \cdot \frac{1}{\left( \pi_{ML} - a\piml + a - a\piml \right)^2} \\
+    % = \ & - m \cdot \frac{1}{\left( \pi_{ML} \cdot (2a - 1) + 1 - a \right)^2} - (n - m) \cdot \frac{1}{\left( \piml \cdot (1 - 2a) + a \right)^2} \\
+    % \leq\ & (a - b) \cdot \left( m \cdot \frac{1}{\left( a \cdot \pi_{ML} + b \cdot (1-\pi_{ML}) \right)^2} - (n - m) \cdot \frac{1}{\left( b \cdot \pi_{ML} + a \cdot (1-\pi_{ML}) \right)^2} \right) \\
+    % =\ & (a - b) \cdot \left( m \cdot \frac{1}{\left( a \cdot \pi_{ML} + (1-a) \cdot (1-\pi_{ML}) \right)^2} - (n - m) \cdot \frac{1}{\left( b \cdot \pi_{ML} + a \cdot (1-\pi_{ML}) \right)^2} \right) \\
+    % =\ & (a - b) \cdot \left( m \cdot \frac{1}{\left( a \cdot \pi_{ML} + 1 - \piml + a \piml - a \right)^2} - (n - m) \cdot \frac{1}{\left( b \cdot \pi_{ML} + a \cdot (1-\pi_{ML}) \right)^2} \right) \\
+    % =\ & (a - b) \cdot \left( m \cdot \frac{1}{\left( \piml \cdot (2a -1) + 1 - a \right)^2} - (n - m) \cdot \frac{1}{\left( b \cdot \pi_{ML} + a \cdot (1-\pi_{ML}) \right)^2} \right) \\
+    % =\ & (a - b) \cdot \left( m \cdot \frac{1}{\left( \piml \cdot (2a -1) + 1 - a \right)^2} - (n - m) \cdot \frac{1}{\left( (1-a) \cdot \pi_{ML} + a \cdot (1-\pi_{ML}) \right)^2} \right) \\
+    % =\ & (a - b) \cdot \left( m \cdot \frac{1}{\left( \piml \cdot (2a -1) + 1 - a \right)^2} - (n - m) \cdot \frac{1}{\left( \pi_{ML} - a\piml + a - \pi_{ML} \cdot a \right)^2} \right) \\
+    % =\ & (a - b) \cdot \left( m \cdot \frac{1}{\left( \piml \cdot (2a -1) + 1 - a \right)^2} - (n - m) \cdot \frac{1}{\left( a - \piml \cdot (2a - 1) \right)^2} \right)\;. \stepandtag \label{eq:second_derivative_problem_1}
+    % ------
+    % =\ & (a - b) \cdot \left( m \cdot \frac{1}{\left( a \cdot \pi_{ML} - (a-1) \cdot (1-\pi_{ML}) \right)^2} - (n - m) \cdot \frac{1}{\left( b \cdot \pi_{ML} + a \cdot (1-\pi_{ML}) \right)^2} \right) \\
+    % =\ & (a - b) \cdot \left( m \cdot \frac{1}{\left( a \cdot \pi_{ML} - a + a \cdot \piml + 1 - \piml  \right)^2} - (n - m) \cdot \frac{1}{\left( b \cdot \pi_{ML} + a \cdot (1-\pi_{ML}) \right)^2} \right) \\
+    % =\ & (a - b) \cdot \left( m \cdot \frac{1}{\left( \piml \cdot (2a - 1) + 1 - a  \right)^2} - (n - m) \cdot \frac{1}{\left( b \cdot \pi_{ML} + a \cdot (1-\pi_{ML}) \right)^2} \right) \\
+    % =\ & (a - b) \cdot \left( m \cdot \frac{1}{\left( \piml \cdot (2a - 1) + 1 - a  \right)^2} - (n - m) \cdot \frac{1}{\left( (1-a) \cdot \pi_{ML} + a \cdot (1-\pi_{ML}) \right)^2} \right) \\
+    % =\ & (a - b) \cdot \left( m \cdot \frac{1}{\left( \piml \cdot (2a - 1) + 1 - a  \right)^2} - (n - m) \cdot \frac{1}{\left( \piml - a \piml + a - a\piml\right)^2} \right) \\
+    % =\ & (a - b) \cdot \left( m \cdot \frac{1}{\left( \piml \cdot (2a - 1) + 1 - a  \right)^2} - (n - m) \cdot \frac{1}{\left( \piml\cdot (2a + 1)\right)^2} \right) \\
+    % \leq\ & (a - b) \cdot \left( m \cdot \frac{1}{a^2 \cdot \pi_{ML}^2 + b^2 \cdot {(1-\pi_{ML})}^2 + 2a \cdot \piml \cdot b \cdot (1-\piml)} - (n - m) \cdot \frac{1}{\left( b \cdot \pi_{ML} + a \cdot (1-\pi_{ML}) \right)^2} \right) \\
+\end{align*}
+with $\alpha > 0$ and $\beta > 0$ from the squaring of the denominator. Hence, we know that the second derivative is negative whenever $n > 0$.
+From this, it follows that our estimator $\piml$ is indeed a maximum.
+
+
+% We now plug in our estimate for $\piml$ from Equation~\ref{eq:ml_estimator_problem_1} into Equation~\ref{eq:second_derivative_problem_1}and get:
+% \begin{align*}
+%     & (a - b) \cdot \left( m \cdot \frac{1}{\left( \left( a - 1 + \frac{m}{n} \right) \cdot \frac{1}{2a -1} \cdot (2a -1) + 1 - a \right)^2} - (n - m) \cdot \frac{1}{\left( a - \left( a - 1 + \frac{m}{n} \right) \cdot \frac{1}{2a -1} \cdot (2a - 1) \right)^2} \right) \\
+%     =\ & (a - b) \cdot \left( m \cdot \frac{1}{\left( a - 1 + \frac{m}{n}  + 1 - a \right)^2} - (n - m) \cdot \frac{1}{\left( a - \left( a - 1 + \frac{m}{n} \right) \right)^2} \right) \\
+%     =\ & (a - b) \cdot \left( m \cdot \frac{1}{\left( a - 1 + \frac{m}{n}  + 1 - a \right)^2} - (n - m) \cdot \frac{1}{\left( a - a + 1 - \frac{m}{n} \right)^2} \right) \\
+%     =\ & (a - b) \cdot \left( m \cdot \frac{1}{\left( \frac{m}{n} \right)^2} - (n - m) \cdot \frac{1}{\left( 1 - \frac{m}{n} \right)^2} \right) \\
+%     =\ & (a - b) \cdot \left( m \cdot \frac{1}{\frac{m^2}{n^2}} - (n - m) \cdot \frac{1}{1^2 + \frac{m^2}{n^2} - \frac{2m}{n}} \right) \\
+%     =\ & (a - b) \cdot \left( m \cdot \frac{n^2}{m^2} - (n - m) \cdot \frac{1}{\frac{1}{n^2} \cdot \left( n^2 + m^2 - 2m \cdot n \right)} \right) \\
+%     =\ & (a - b) \cdot \left( m \cdot \frac{n^2}{m^2} - (n - m) \cdot \frac{n^2}{n^2 + m^2 - 2m \cdot n } \right) \\
+%     =\ & (a - b) \cdot n^2 \left( \frac{1}{m} - (n - m) \cdot \frac{1}{n^2 + m^2 - 2m \cdot n} \right) \\
+% \end{align*}
+}
+% We see that for any value of $\piml$, the fraction will be positive as the denominator is squared. Moreover, we can distinguish between two cases: $a < 0.5$ and $a > 0.5$.
+% For $a<0.5$, we have
+% \begin{equation*}
+%     (a-(1-a)) < 0 \quad \land \quad ((1-a) - a) > 0\;.
+% \end{equation*}
+% Therefore, in order for the second derivative to be negative, we need to have $m > (n-m)$, i.e. $m > \frac{n}{2}$.
+
+% Similarly, for $a>0.5$, we have 
+% \begin{equation*}
+%     (a-(1-a)) > 0 \quad \land \quad ((1-a) - a) < 0\;.
+% \end{equation*}
+% Therefore, in order for the second derivative to be negative, we need to have $m < (n-m)$, i.e. $m < \frac{n}{2}$.
+
+% \todo[inline]{This will be loooong I think...}
+
+
+
+
+
+\subsection*{(d)}
+\textit{Can you think of an easier way to arrive at the same estimator as the maximum likelihood estimator?}
+
+We observe that $X_i$ follows a Bernoulli distribution. We now first show that this holds. 
+
+Recall that the definition of a Bernoulli distribution is given by 
+\begin{align*}
+    P(X=1) &= p \\
+    P(X=0) &= 1-p \;.
+\end{align*}
+Therefore, we now aim to show that $P(X_i)$ follows a Bernoulli distribution. 
+From (a), we have that
+We have
+\begin{equation*}
+    P(X_i = 1) = a \cdot \pi + (1-a) \cdot (1-\pi)
+\end{equation*}
+and
+\begin{equation*}
+    P(X_i = 0) = (1-a) \cdot \pi + a \cdot (1-\pi) \;.
+\end{equation*}
+
+We multiply out the expression to get
+\begin{align*}
+    P(X_i = 1) &= a \cdot \pi + 1-\pi - a \cdot (1-\pi) \\
+    &= a \cdot \pi + 1-\pi - a + a \cdot \pi \\
+    &= 2a \cdot \pi + 1 - \pi - a \\ 
+    &= 1 + 2a \cdot \pi - \pi - a \stepandtag \label{eq:bernoulli_1} \\ 
+    P(X_i = 0) &= (1-a) \cdot \pi + a \cdot (1-\pi) \\
+    &= \pi - a \cdot \pi + a - a \cdot \pi  \\
+    &= -2a\cdot \pi + \pi + a \stepandtag \label{eq:bernoulli_2}\;.
+\end{align*}
+
+Therefore, with $p = 1 + 2a \cdot \pi - \pi - a$ (from Equation~\ref{eq:bernoulli_1}), we have
+\begin{align*}
+    P(X=0) 
+    &= 1 - p \\
+    &= 1 - P(X=1) \\
+    &= 1 - (1 + 2a \cdot \pi - \pi - a) \\
+    &= 1 - 1 - 2a \cdot \pi + \pi + a \\
+    &= - 2a \cdot \pi + \pi + a \stepandtag \label{eq:bernoulli_3}
+\end{align*}
+where Equation~\ref{eq:bernoulli_3} matches the expression in Equation~\ref{eq:bernoulli_2}.
+Therefore, we have shown that $X_i$ follows a Bernoulli distribution with parameter $p = 1 + 2a \cdot \pi - \pi - a$.
+
+Following from this result, because the random variable $m$ is the sum of $n$ i.i.d.\ Bernoulli random variables, we know that $m$ follows a Binomial distribution with parameters $n$ and $p$.
+Hence, the likelihood of observing $m$ ones in $n$ samples is given by the probability density function of the Binomial distribution:
+\begin{equation}
+    \Pr(X=m) = \binom{n}{m} p^m (1-p)^{n-m} \label{eq:binomial_likelihood}\;.
+\end{equation}
+While Equation~\ref{eq:binomial_likelihood} differs from the likelihood function we derived in Equation~\ref{eq:likelihood_problem_1}, we can see that the $\binom{n}{m}$ term cancels out when deriving the log likelihood; First, the log likelihood transforms the multiplication into a sum with a log term, and then when deriving w.r.t. $\pi_{ML}$, the $\log \binom{n}{m}$ becomes zero and therefore disappears. Hence, we end up with the same expression for the log likelihood.
+
+As the Binomial distribution is well-known, we know that the maximum likelihood estimator of $p$ of the Binomial distribution is given by $p_{ML} = \frac{m}{n}$, which is the proportion of successes, i.e., the number of $X_i=1$ in $n$ samples.\!\footnote{See \url{https://en.wikipedia.org/wiki/Binomial_distribution\#Estimation_of_parameters}.}
+
+Finally, to derive the maximum likelihood estimator of $\pi_{ML}$, we equate $p_{ML}$ and $P(X_i=1)$ (as $P(X_i=1) = p$), and then solve for $\pi_{ML}$:
+\begin{align*}
+    P(X_i=1) &= p_{ML} \\
+    1 + 2a \cdot \pi_{ML} - \pi_{ML} - a &= \frac{m}{n} \\
+    2a \cdot \pi_{ML} - \pi_{ML} &= \frac{m}{n} + a - 1 \\
+    \pi_{ML} \cdot (2a -1) &= \frac{m}{n} + a - 1 \\
+    \pi_{ML} &= \frac{\frac{m}{n} + a - 1}{(2a -1)} \stepandtag \label{eq:ml_estimator_problem_1_alternative}\;.
+\end{align*}
+We clearly observe that Equation~\ref{eq:ml_estimator_problem_1_alternative} matches Equation~\ref{eq:ml_estimator_problem_1}, hence, we found the same maximum likelihood estimator of $\pi_{ML}$ as in (c).
+
+
+\subsection*{(e)}
+\textit{Show that $\piml$ is an unbiased estimator of $\pi$.}
+
+We aim to show that $\mathbb{E}[\piml] = \pi$.
+To this end, we will make use of the knowledge introduced in (d), namely that $X_i$ follows a Bernoulli distribution.
+
+We have 
+% \begin{align*}
+%     % \mathbb{E}_{\pi_{ML}}[m] &= n \cdot \mathbb{E}_{\pi_{ML}}[X_i]
+%     \mathbb{E} \left[ \pi_{ML} \right] &= \mathbb{E} \left[ \frac{\frac{m}{n} + a - 1}{(2a -1)} \right] \\
+%     &= \mathbb{E} \left[ \frac{\frac{\sum_{i=1}^{n} X_i}{n} + a - 1}{(2a -1)} \right] \\
+%     &= \frac{1}{(2a -1)} \cdot \mathbb{E} \left[ \frac{\sum_{i=1}^{n} X_i}{n} + a - 1 \right] \\
+%     &= \frac{a - 1}{(2a -1)} \cdot \mathbb{E} \left[ \frac{\sum_{i=1}^{n} X_i}{n} \right] \\
+%     &= \frac{a - 1}{(2a -1) \cdot n} \cdot \mathbb{E} \left[ \sum_{i=1}^{n} X_i \right] \\
+%     &= \frac{a - 1}{(2a -1) \cdot n} \cdot \left( \sum_{i=1}^{n} \mathbb{E}[X_i] \right) \stepandtag \label{eq:expectation_x_i}\;.
+% \end{align*}
+\begin{align*}
+    % \mathbb{E}_{\pi_{ML}}[m] &= n \cdot \mathbb{E}_{\pi_{ML}}[X_i]
+    \mathbb{E} \left[ \pi_{ML} \right] &= \mathbb{E} \left[ \frac{\frac{m}{n} + a - 1}{(2a -1)} \right] \\
+    &= \mathbb{E} \left[ \frac{\frac{\sum_{i=1}^{n} X_i}{n} + a - 1}{(2a -1)} \right] \\
+    &= \frac{\sum_{i=1}^{n} \mathbb{E}[ X_i] + a \cdot n - 1 \cdot n}{(2a -1) \cdot n} \stepandtag \label{eq:expectation_x_i}\;.
+\end{align*}
+We now compute the expectation of $X_i$:
+\begin{align*}
+    \mathbb{E}[X_i] &= P(X_i=1) \cdot 1 + P(X_i = 0) \cdot 0 \\
+    &= P(X_i=1) \\
+    &= a \cdot \pi + (1-a) \cdot (1-\pi) \\
+    &= (1-a) + (2a - 1) \cdot \pi \stepandtag \label{eq:expectation_x_i_2} \;.
+\end{align*}
+Finally, we can substitute Equation~\ref{eq:expectation_x_i_2} into Equation~\ref{eq:expectation_x_i} to get
+\begin{align*}
+    \mathbb{E} \left[ \pi_{ML} \right] &= \frac{\sum_{i=1}^{n} \mathbb{E}[ X_i] + a \cdot n - 1 \cdot n}{(2a -1) \cdot n} \\
+    &= \frac{\sum_{i=1}^{n} \left( (1-a) + (2a - 1) \cdot \pi \right) + a \cdot n - 1 \cdot n}{(2a -1) \cdot n} \\
+    &= \frac{ n \cdot \left( (1-a) + (2a - 1) \cdot \pi \right) + a \cdot n - 1 \cdot n}{(2a -1) \cdot n} \\
+    &= \frac{ \left( (1-a) + (2a - 1) \cdot \pi \right) + a - 1}{(2a -1)} \\
+    &= \frac{ -(a-1) + (2a - 1) \cdot \pi + (a - 1)}{(2a -1)} \\
+    &= \frac{ (2a - 1) \cdot \pi}{(2a -1)} \\
+    &= \pi \stepandtag \label{eq:expectation_pi_ml}\;.
+\end{align*}
+We have shown that the expected value of $\piml$ is equal to the true value of $\pi$ (Equation~\ref{eq:expectation_pi_ml}). Therefore, we can conclude that our estimator for $\pi_{ML}$ is unbiased.
+
+\subsection*{(f)}
+\textit{Derive an expression for the variance of $\piml$. Analyse its dependence on $a$.}
+
+We have
+\begin{align*}
+    \mathbb{V}[\pi_{ML}] &= \mathbb{V}\left[ \frac{\frac{m}{n} + a - 1}{(2a -1)} \right] \\
+    &= \mathbb{V}\left[ \frac{m}{n} + a - 1 \right] \cdot \frac{1}{{(2a-1)}^2} \\
+    &= \mathbb{V}\left[ \frac{1}{n} \left( m + a \cdot n - 1 \cdot n \right) \right] \cdot \frac{1}{{(2a-1)}^2} \\
+    &= \mathbb{V}\left[  m + a \cdot n - 1 \cdot n \right] \cdot \frac{1}{{(2a-1)}^2 \cdot n^2} \\
+    &= \mathbb{V}\left[  \sum_{i=1}^{n} X_i + a \cdot n - 1 \cdot n \right] \cdot \frac{1}{{(2a-1)}^2 \cdot n^2} \\
+    &= \mathbb{V}\left[  \sum_{i=1}^{n} X_i \right] \cdot \frac{1}{{(2a-1)}^2 \cdot n^2} \\
+    &= \sum_{i=1}^{n} \mathbb{V}\left[  X_i \right] \cdot \frac{1}{{(2a-1)}^2 \cdot n^2}\;.\stepandtag \label{eq:variance_pi_ml_1}
+\end{align*}
+We now compute the variance of $X_i$. We have:
+\begin{align*}
+    \mathbb{E}[X_i^2] &= P(X_i = 1) \cdot 1^2 + P(X_i = 0) \cdot 0 ^2 \\ 
+    &= P(X_i = 1) \\
+    &= (1-a) + (2a - 1) \cdot \pi\;, \stepandtag \label{eq:expectation_complex_x_i_square_inside}
+\end{align*}
+and
+\begin{align*}
+    {\mathbb{E}[X_i]}^2 &= {\left( (1-a) + (2a - 1) \cdot \pi  \right)}^2 \\
+    &= {(1-a)}^2 + {(2a - 1)}^2 \cdot \pi^2 + 2 \cdot (1-a) \cdot (2a - 1) \cdot \pi \\
+    &= 1^2+a^2 - 2a + 4a^2\pi^2 + \pi^2 - 4a \cdot \pi^2 + (2-2a) \cdot (2a - 1) \cdot \pi \\
+    &= 1+a^2 - 2a + 4a^2\pi^2 + \pi^2 - 4a \cdot \pi^2 + (4a - 2 - 4a^2 + 2a) \cdot \pi \\
+    % &= 1+a^2 - 2a + 4a^2\pi^2 + \pi^2 - 4a \cdot \pi^2 + 4a\pi - 2\pi - 4a^2\pi + 2a\pi \\
+    &= 1 + \pi \left(6a - 4a^2 - 2 \right) + \pi^2 (4 a^2 - 4 a + 1) - 2a + a^2\;. \stepandtag \label{eq:expectation_complex_x_i_square_outside}
+\end{align*}
+
+Therefore, the variance of $X_i$ is given by
+\begin{align*}
+    V(X_i) &= \mathbb{E}\left[ X_i^2 \right] - {E[X_i]}^2 \\
+    &= \pi (2a - 1) + 1 - a - \left( 1 + \pi \left(6a - 4a^2 - 2 \right) + \pi^2 (4 a^2 - 4 a + 1) - 2a + a^2 \right) \\
+    &= \pi (2a - 1) + 1 - a -1 - \pi \left(6a - 4a^2 - 2 \right) - \pi^2 (4 a^2 - 4 a + 1) + 2a - a^2 \\
+    &= \pi (2a - 1) - \pi \left(6a - 4a^2 - 2 \right) - \pi^2 (4 a^2 - 4 a + 1) + a - a^2 \\
+    &= \pi \left(2a - 1 - (6a - 4a^2 - 2 )\right) - \pi^2 (4 a^2 - 4 a + 1) + a - a^2 \\
+    &= \pi \left(2a - 1 - 6a + 4a^2 + 2 \right) - \pi^2 (4 a^2 - 4 a + 1) + a - a^2 \\
+    &= \pi \left(1- 4a + 4a^2  \right) - \pi^2 (1 - 4a + 4 a^2) + a - a^2 \\
+    &= \left(1- 4a + 4a^2  \right) \cdot (\pi - \pi^2) + a - a^2 \;. \stepandtag \label{eq:variance_x_i}
+\end{align*}
+
+Finally, to compute the variance of the estimator of $\piml$, we plug Equation~\ref{eq:variance_x_i} into Equation~\ref{eq:variance_pi_ml_1} and get
+\begin{align*}
+    \mathbb{V}[\pi_{ML}] &= \sum_{i=1}^{n} \mathbb{V}\left[  X_i \right] \cdot \frac{1}{{(2a-1)}^2 \cdot n^2} \\
+    &= \sum_{i=1}^{n} \left( \left(1- 4a + 4a^2  \right) \cdot (\pi - \pi^2) + a - a^2 \right) \cdot \frac{1}{{(2a-1)}^2 \cdot n^2} \\
+    &= n \cdot \left( \left(1- 4a + 4a^2  \right) \cdot (\pi - \pi^2) + a - a^2 \right) \cdot \frac{1}{{(2a-1)}^2 \cdot n^2} \\
+    &= \left( \left(1- 4a + 4a^2  \right) \cdot (\pi - \pi^2) + a - a^2 \right) \cdot \frac{1}{{(2a-1)}^2 \cdot n} \\
+    &= \left( {\left(2a -1 \right)}^2 \cdot (\pi - \pi^2) + a - a^2 \right) \cdot \frac{1}{{(2a-1)}^2 \cdot n} \\
+    &= \frac{{\left(2a -1 \right)}^2 \cdot (\pi - \pi^2)}{{(2a-1)}^2 \cdot n} + \frac{a - a^2}{{(2a-1)}^2 \cdot n} \\
+    &= \frac{\pi - \pi^2}{n} + \frac{a - a^2}{{(2a-1)}^2 \cdot n} \;. \stepandtag \label{eq:variance_pi_ml}
+\end{align*}
+
+We correctly observe that the variance is undefined for $a=0.5$. Furthermore, we observe that the variance decreases as $n$ increases, which is to be expected as we get more evidence with more data. 
+Lastly, we observe that whenever $a$ approaches either $0$ or $1$, the variance decreases. The same phenomenon is observed for the true value of $\pi$. 
+
+Figure~\ref{fig:variance_heatmap} shows the log-scaled variance of $\pi_{ML}$ as a function of $a$ and $\pi$, which clearly displays the behavior previously described.
+In short, our monte-carlo simulation confirms that the variance of the estimator of $\pi_{ML}$ is maximal whenever $a$ approaches $0.5$, and furthermore increased as $\pi$ approaches $0.5$.
+This makes sense, as whenever $a=0.5$ (or close), there is very little information gained from the answer of the users, a yes could be from both groups. Hence, the variance of the estimator will be very large in this case. Furthermore, whenever one group is much larger than the other (i.e., $\pi \to 0$ or $\pi \to 1$), we exect the answers to be more consistent, and hence the estimation of $\pi$ will be more accurate. Thus, the variance decreases as $\pi$ approaches the extremes of $0$ and $1$.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{./heatmap.png}
+    \caption{Variance of $\pi_{ML}$ as function of $a$ and $\pi$ for different values of $n$. Here, the values are log-scaled for better display. Note that we restrict $a\in [0.01, 0.99]$ and $\pi\in [0.01, 0.99]$ for the plot. Hence, very low values are expected whenever $a$ or $\pi$ exceeds these bounds.}
+    \label{fig:variance_heatmap}
+\end{figure}
+
+
+
+\subsection*{(g)}
+\textit{Give an expression for the bias of this naive estimator. Is it asymptotically unbiased?}
+
+We aim to recover the value of $\pi$ from direct questioning. 
+However, persons belonging to the sensitive group will lie with probability $\ell$, whereas persons belonging to the non-sensitive group will answer truthfully and therefore lie with probability $0$.
+
+Naivily, we could estimate the value of $\pi$ as the fraction of persons answering yes to the question:
+\begin{equation*}
+    \pi_\text{naive} = \frac{\sum_{i=1}^{n} X_i}{n}\;.
+\end{equation*}
+
+We can model the whether a person belongs to the sensitive group as a hidden variable $S_i \in \{0, 1\}$ with $S_i = 1$ describing that the person belongs to the sensitive group, and $S_i = 0$ describes that a person belongs to the non-sensitive group.
+
+Naturally, we have that 
+\begin{align*}
+    P(S_i = 1) &= \pi \\
+    P(S_i = 0) &= 1 - \pi
+\end{align*}
+which is distributed according to a Bernoulli distribution with parameter $p=\pi$.
+
+We can now express the probability of a person answering yes or no to the question by marginalizing over the hidden variable $S_i$:
+\begin{align*}
+    P(X_i = 1) &= P(X_i = 1, S_i = 1) + P(X_i = 1, S_i = 0) \\
+    &= \pi \cdot (1-\ell) + 0 \\
+    P(X_i = 0) &= P(X_i = 0, S_i = 1) + P(X_i = 0, S_i = 0) \\
+    &= \pi \cdot \ell + (1-\pi)\;.
+\end{align*}
+
+We verify that the probabilities are correct by adding both $P(X_i = 1)$ and $P(X_i = 0)$ and getting $1$:
+\begin{align*}
+    P(X_i = 1) + P(X_i = 0) &= \pi \cdot (1-\ell) + \pi \cdot \ell + (1-\pi) \\
+    &= \pi (1-\ell + \ell) + 1- \pi \\
+    &= \pi (1) + 1- \pi \\
+    &= 1\;.
+\end{align*}
+
+We now compute the expeced value of the naive estimator of $\pi$ to check whether the estimator is unbiased.
+We have
+\begin{align*}
+    \mathbb{E}[\pi_\text{naive}] &= \mathbb{E}\left[ \frac{\sum_{i=1}^{n} X_i}{n} \right] \\
+    &= \frac{1}{n} \cdot \sum_{i=1}^{n} \mathbb{E}[X_i] \\
+    &= \frac{1}{n} \cdot \sum_{i=1}^{n} \left( P(X_i = 1) \cdot 1 + P(X_i = 0) \cdot 0 \right) \\
+    &= \frac{1}{n} \cdot \sum_{i=1}^{n} \left( P(X_i = 1) \right) \\
+    &= \frac{1}{n} \cdot \sum_{i=1}^{n} \left( \pi \cdot (1-\ell) \right) \\
+    &= \frac{1}{n} \cdot n \left( \pi \cdot (1-\ell) \right) \\
+    &= \pi \cdot (1-\ell)\;. \stepandtag \label{eq:naive_expected_value}
+\end{align*}
+
+We can now use the expected value of $\pi_{\text{naive}}$ to compute the bias of the estimator:
+\begin{align*}
+    \text{Bias}(\pi_{\text{naive}}, \pi) &= {\left[ \mathbb{E}[\pi_{\text{naive}}] - \pi \right]}^2 \\
+    &= {\left[ \pi \cdot (1-\ell) - \pi \right]}^2 \\
+    &= {\left[ \pi - \pi \ell - \pi \right]}^2 \\
+    &= {\left[ - \pi \ell \right]}^2 \\
+    &= \pi^2 \ell^2\;. \stepandtag \label{eq:bias_naive}
+\end{align*}
+
+Therefore, only whenever $\ell = 0$, i.e., no one lies, is the naive estimator of $\pi$ is unbiased.
+Otherwise, the estimator is biased towards and goes towards zero bias whenever either $\ell$ or $\pi$ goes to zero.
+
+
+\subsection*{(h)}
+\textit{Derive expressions for the mean squared error (MSE) of the randomized response estimator and the naive estimator. Analyse the expressions to draw conclusions about when, depending on the relevant parameters $(\pi, a, \ell, n)$, one estimator should be favored over the other.}
+
+We aim to compute the mean squared error of our two estimators of $\pi$.
+
+% \begin{align*}
+%     \text{MSE}(\pi_{\text{naive}}) &= \mathbb{E}\left[ {\left( \pi_{\text{naive}} - \pi \right)}^2 \right] \\
+%     &= \mathbb{E} \left[ \pi_{\text{naive}}^2 + \pi^2 - 2\pi_{\text{naive}} \pi \right] \\
+%     &= \mathbb{E} \left[ \pi_{\text{naive}}^2  \right] + \mathbb{E} \left[ \pi^2  \right] - \mathbb{E} \left[ 2\pi_{\text{naive}} \pi  \right] \\
+%     &= \mathbb{E}\left[ {\left( \frac{\sum_{i=1}^{n} X_i}{n} \right)}^2 \right] + \pi^2 - 2 \pi \mathbb{E}\left[ \pi_{\text{naive}} \right] \\
+%     &\overset{(\ref{eq:naive_expected_value})}{=} \mathbb{E}\left[ {\left( \frac{\sum_{i=1}^{n} X_i}{n} \right)}^2 \right] + \pi^2 - 2 \pi \left( \pi \cdot (1-\ell) \right) \\
+%     &= \mathbb{E}\left[ {\left( \frac{\sum_{i=1}^{n} X_i}{n} \right)}^2 \right] + \pi^2 - 2 \pi^2 (1-\ell) \\
+%     &= \mathbb{E}\left[ X_i \right]^2 + \pi^2 - 2 \pi^2 (1-\ell) \stepandtag \label{eq:mse_iid_assumption} \\
+% \end{align*}
+We use the Bias Variance decomposition to decompose the MSE into the bias and variance terms.\!\footnote{See \url{https://en.wikipedia.org/wiki/Mean_squared_error\#Proof_of_variance_and_bias_relationship}.}
+Therefore, we simplify the MSE into 
+\begin{align*}
+    \text{MSE}(\hat{\pi}, \pi) &= \mathbb{E}\left[ {\left( \hat{\pi} - \mathbb{E}[\hat{\pi}] \right)}^2 \right] + {\left[ \mathbb{E}[\hat{\pi}] - \pi \right]}^2 \\
+    &= \mathbb{V}\left[ \hat{\pi} \right] + {\left[ \mathbb{E}[\hat{\pi}] - \pi \right]}^2 \\
+    &= \mathbb{V}\left[ \hat{\pi} \right] + \text{Bias}(\hat{\pi}, \pi) \\
+\end{align*}
+Therefore, we have
+% \begin{align*}
+%     \text{MSE}(\pi_{\text{naive}}, \pi) &= \mathbb{E}\left[ {\left( \mathbb{E}[\pi_{\text{naive}}] - \pi \right)}^2 \right] + {\left[ \mathbb{E}[\pi_{\text{naive}}] - \pi \right]}^2 \\
+%     &= \mathbb{E}\left[ \mathbb{E}{[\pi_{\text{naive}}]}^2 + \pi^2 - 2\pi\mathbb{E}[\pi_{\text{naive}}]  \right] + {\left[ \mathbb{E}[\pi_{\text{naive}}] - \pi \right]}^2 \\
+%     &= \mathbb{E}{[\pi_{\text{naive}}]}^2 + \mathbb{E}\left[ \pi^2  \right] - \mathbb{E}\left[ 2\pi\mathbb{E}[\pi_{\text{naive}}]  \right] + {\left[ \mathbb{E}[\pi_{\text{naive}}] - \pi \right]}^2 \\
+%     &= \mathbb{E}{[\pi_{\text{naive}}]}^2 + \mathbb{E}\left[ \pi^2  \right] - 2\pi \mathbb{E}[\pi_{\text{naive}}] + {\left[ \mathbb{E}[\pi_{\text{naive}}] - \pi \right]}^2 \\
+%     &\overset{(\ref{eq:naive_expected_value})}{=} {\left( \pi \cdot (1-\ell) \right)}^2 + \pi^2 - 2\pi \left( \pi \cdot (1-\ell) \right) + {\left[ \left( \pi \cdot (1-\ell) \right) - \pi \right]}^2 \\
+%     &={\left( \pi \cdot (1-\ell) \right)}^2  + \pi^2 - 2\pi^2 \cdot (1-\ell) + {\left( \pi \cdot (1-\ell) \right)}^2 + \pi^2 - 2\pi\left( \pi \cdot (1-\ell) \right) \\
+%     &= {\left( \pi \cdot (1-\ell) \right)}^2  + \pi^2 - 2\pi^2 \cdot (1-\ell) + {\left( \pi \cdot (1-\ell) \right)}^2 + \pi^2 - 2\pi^2 \cdot (1-\ell) \\
+%     &= 2\pi^2 - 4\pi^2 \cdot (1-\ell) + 2{\left( \pi \cdot (1-\ell) \right)}^2  \\
+%     &= 2\pi^2 - 4\pi^2 \cdot (1-\ell) + 2\pi^2 \cdot {(1-\ell)}^2  \\
+%     &= 2\pi^2 \left( {(1-\ell)}^2 - 2(1-\ell) + 1 \right)  \\
+%     &= 2\pi^2 \left( 1^2 + \ell^2 - 2\ell - 2 + 2\ell + 1 \right)  \\
+%     &= 2\pi^2 \ell^2 
+% \end{align*}
+% Let us first compute $\mathbb{E}[\pi_\text{naive}^2]$ and ${\mathbb{E}[\pi_\text{naive}]}^2$.
+% \begin{align*}
+%     \mathbb{E}[\pi_\text{naive}^2] &= \mathbb{E} \left[ {\left( \frac{\sum_{i=1}^{n} X_i}{n} \right)}^2 \right] \\
+%     &= \mathbb{E} \left[ {\left( \frac{\sum_{i=1}^{n} X_i}{n} \right)}^2 \right] \\
+%     &= \mathbb{E} \left[ {\left( \frac{1}{n} \cdot \sum_{i=1}^{n} X_i \right)}^2 \right] \\
+%     &= \mathbb{E} \left[ \frac{1}{n^2} {\left( \sum_{i=1}^{n} X_i \right)}^2 \right] \\
+%     &= \frac{1}{n^2} \mathbb{E} \left[ {\left( \sum_{i=1}^{n} X_i \right)}^2 \right] \\
+%     &= \frac{1}{n^2} \mathbb{E} \left[ n \cdot \mathbb{E}[X_i \cdot X_i] + (n^2 - n) \cdot \mathbb{E}[X_i \cdot X_j] \right] \\
+%     &= \frac{1}{n^2} \mathbb{E} \left[ n \cdot \mathbb{E}[X_i^2] + (n^2 - n) \cdot \left( \mathbb{E}[X_i] + \mathbb{E}[X_j] \right) \right] \\
+%     &= \frac{1}{n^2} \mathbb{E} \left[ n \cdot \mathbb{E}[X_i^2] + (n^2 - n) \cdot {\mathbb{E}[X_i]}^2 \right] \\
+%     &= \frac{1}{n} \mathbb{E}[X_i^2] + \frac{n^2 - n}{n^2} \cdot {\mathbb{E}[X_i]}^2  \\
+%     &= \frac{1}{n} \mathbb{E}[X_i^2] + \left( 1 - \frac{1}{n} \right) \cdot {\mathbb{E}[X_i]}^2  \\
+%     &= \frac{1}{n} \mathbb{E}[X_i^2] + \left( \frac{n-1}{n} \right) \cdot {\mathbb{E}[X_i]}^2 \\
+%     &= \frac{1}{n} \left[ P(X_i = 1) \cdot 1^2 + P(X_i = 0) \cdot 0^2 \right] + \left( \frac{n-1}{n}\right) \cdot {\left( P(X_i = 1) \cdot 1 + P(X_i = 0) \cdot 0 \right)}^2 \\
+%     &= \frac{1}{n} \left[ P(X_i = 1)\right] + \left( \frac{n-1}{n} \right) \cdot {\left( P(X_i = 1) \right)}^2 \\
+%     &= \frac{1}{n} \left[ \pi \cdot (1- \ell)\right] + \left( \frac{n-1}{n} \right) \cdot {\left( \pi \cdot (1- \ell) \right)}^2 \\
+%     &= \frac{\pi \cdot (1- \ell)}{n} + \left( \frac{n-1}{n} \right) \cdot  \pi^2 \cdot {(1- \ell)}^2 
+%     % &= \frac{1}{n} \left( \pi \cdot (1- \ell) + \left( n-1 \right) \cdot  \pi^2 \cdot {(1- \ell)}^2 \right) 
+%     \stepandtag \label{eq:expectation_naive_x_i_square_outside} 
+% \end{align*}
+
+\begin{align*}
+    \mathbb{V}[\pi_{\text{naive}}] &= \mathbb{V}\left[ \frac{\sum_{i=1}^{n} X_i}{n} \right] \\
+    &= \frac{1}{n^2} \sum_{i=1}^{n} \mathbb{V}[X_i] \\
+    &= \frac{1}{n^2} \sum_{i=1}^{n} \mathbb{E}[X_i^2] - {\mathbb{E}[X_i]}^2 \\
+    &= \frac{1}{n^2} \sum_{i=1}^{n} \left[ P(X_i = 1) \right] - {\left( P(X_i = 1) \right)}^2 \\
+    &= \frac{1}{n^2} \sum_{i=1}^{n} (\pi \cdot (1-\ell)) - {(\pi \cdot (1-\ell))}^2 \\
+    &= \frac{n}{n^2} \left( (\pi \cdot (1-\ell)) - {(\pi \cdot (1-\ell))}^2 \right) \\
+    &= \frac{\pi \cdot (1-\ell) - \pi^2 \cdot {(1-\ell)}^2}{n} \stepandtag \label{eq:variance_naive_x_i}
+    % &= \frac{1}{n} \left( \pi \cdot (1-\ell) - \pi^2- \pi^2 \ell^2 \right) \\
+\end{align*}
+
+\begin{align*}
+    \text{MSE}(\pi_{\text{naive}}, \pi) &= \mathbb{V}[\pi_{\text{naive}}] + \text{Bias}(\hat{\pi}, \pi) \\
+    &\overset{(\ref{eq:variance_naive_x_i})}{=} \frac{\pi \cdot (1-\ell) - \pi^2 \cdot {(1-\ell)}^2}{n} + \text{Bias}(\hat{\pi}, \pi) \\
+    &\overset{(\ref{eq:bias_naive})}{=} \frac{\pi \cdot (1-\ell) - \pi^2 \cdot {(1-\ell)}^2}{n} + \pi^2 \ell^2
+    \;.
+    % &= \frac{\pi \cdot (1-\ell) - \pi^2 \cdot {(1-\ell)}^2}{n} + {\mathbb{E}[\pi_{\text{naive}}]}^2 + \pi^2 - 2\pi \mathbb{E}\left[ \pi_{\text{naive}} \right] \\
+    % &= \frac{\pi \cdot (1-\ell) - \pi^2 \cdot {(1-\ell)}^2}{n} + {\left( \pi \cdot (1-\ell) \right)}^2 + \pi^2 - 2\pi \pi \cdot (1-\ell) \\
+    % &= \frac{\pi \cdot (1-\ell) - \pi^2 \cdot {(1-\ell)}^2}{n} + \pi^2 \cdot {(1-\ell)}^2 + \pi^2 - 2\pi^2 \cdot (1-\ell) \\
+\end{align*}
+
+Because the $\piml$ is an unbiased estimator of $\pi$, we have that $\text{Bias}(\piml, \pi) = 0$.
+Therefore, we have
+\begin{align*}
+    \text{MSE}(\pi_{\text{ML}}, \pi) &= \mathbb{V}[\pi_{\text{ML}}] + \text{Bias}(\pi_{\text{ML}}, \pi) \\
+    &= \mathbb{V}[\pi_{\text{ML}}] \\
+    &\overset{(\ref{eq:variance_pi_ml})}{=} \frac{\pi - \pi^2}{n} + \frac{a - a^2}{{(2a-1)}^2 \cdot n}\;.
+    % &\overset{(\ref{eq:variance_pi_ml})}{=} \frac{\pi - \pi^2}{n} + \frac{a - a^2}{(2^2a^2 +1^2 - 2a) \cdot n} \\
+    % &\overset{(\ref{eq:variance_pi_ml})}{=} \frac{\pi - \pi^2}{n} - \frac{a - a^2}{2(a - \frac{1}{2} - 2a^2) \cdot n} \\
+\end{align*}
+
+First, we observe that whenever no-one lies ($\ell = 0$), the left side of the MSE of $\pi_{\text{naive}}$ is equal to the left side of the MSE of $\piml$. However, as the right side of the MSE of $\pi_{\text{naive}}$ is multiplied with $\ell^2$, the MSE is zero for $\ell = 0$, whereas the MSE of $\piml$ is non-zero, given $a\notin \{0, 1\}$. If $a\in \{0, 1\}$, then both estimators are equal w.r.t. the MSE.
+
+
+% We now solve for both MSE expressions to be equal.
+% \begin{align*}
+%     \text{MSE}(\pi_{\text{naive}}, \pi) &= \text{MSE}(\pi_{\text{ML}}, \pi) \\
+%     \frac{\pi \cdot (1-\ell) - \pi^2 \cdot {(1-\ell)}^2}{n} + \pi^2 \ell^2 & = \frac{\pi - \pi^2}{n} + \frac{a - a^2}{{(2a-1)}^2 \cdot n} &&\mid \cdot\  n \\
+%     \pi \cdot (1-\ell) - \pi^2 \cdot {(1-\ell)}^2 + n \cdot \pi^2 \ell^2 & = \pi - \pi^2 + \frac{a - a^2}{{(2a-1)}^2} &&\mid \div \ \pi \\
+%     (1-\ell) - \pi \cdot {(1-\ell)}^2 + n \cdot \pi \ell^2 & = 1 - \pi + \frac{a - a^2}{{(2a-1)}^2 \cdot \pi}  \stepandtag \label{eq:mse_equal} \;.
+% \end{align*}
+
+% First, we observe that Equation~\ref{eq:mse_equal} for the MSE of $\pi_{\text{naive}}$ increases w.r.t. $n$ whenever $\ell > 0$ and $\pi > 0$, whereas the MSE of $\piml$ does not depend on $n$.
+% Therefore, this shows that with increasing sample size, the MSE of $\piml$ decreases faster than the MSE for $\pi_{\text{naive}}$. Therefore, for large sample size, $\piml$ should be preferred over $\pi_{\text{naive}}$.
+
+Due to the complex expressions, finding the cut-off points for when both MSE expressions are equal --- and therefore finding whenever one estimator is better than the other analytically --- is very complicated.
+While we have explained the trivial edge cases, whenever we have $a \notin \{0, 1\} \land \pi \notin \{0, 1\}$, we have no easy way to determine when which estimator is better than the other. To overcome this issue, we have computed the expected MSE for both estimators for a range of values for $a, \pi, \ell$, and $n$ and show the results in Figure~\ref{fig:mse_naive_better}. 
+Figure~\ref{fig:mse_naive_better} clearly shows the complex, non-linear relationship between both MSE expression. 
+
+First, it is clear that no single best estimator exists for all parameters. 
+The shape of the region where $\pi_{naive}$ has a lower MSE than $\piml$ is quite clear:
+whenever $\ell = 0$, the naive estimator is better than the ML estimator. Furthermore, whenever $\pi = 0$, the naive estimator is also better. Both cases make sense, as whenever no one lies, the naive estimator is the better estimator of the two.
+
+
+\begin{figure}[t]
+    \centering
+    % \includegraphics[width=0.7\textwidth]{MSE_naive_vs_ml_10.png}
+    % \includegraphics[width=0.7\textwidth]{MSE_naive_vs_ml_100.png}
+    \subfloat[For $n = 10$]{\includegraphics[width = 2.5in]{rregion_10.png}}
+    % \subcaption{Meow}
+    \subfloat[For $n = 100$]{\includegraphics[width = 2.5in]{rregion_100.png}}\\
+    \subfloat[For $n = 1\ 000$]{\includegraphics[width = 2.5in]{rregion_1000.png}}
+    \subfloat[For $n = 10\ 000$]{\includegraphics[width = 2.5in]{rregion_10000.png}} 
+    \caption{Plots of the parameter space of $(\pi, a, \ell)$ for various sample sizes $n$. The purple voxels indicate for which parameters the MSE of $\pi_{naive}$ is lower than the MSE of $\piml$.}
+    % \caption{In each subfigure, we plot the MSE of $\piml$ and $\pi_{\text{naive}}$ in 3D (left) and indicate with what parameters the MSE of $$}
+    \label{fig:mse_naive_better}
+\end{figure}
+
+Figure~\ref{fig:mse_naive_better} also shows that whenever $a$ is close or equal to $0.5$, the naive estimator is the better solution. Note that while our plot shows that in the subplot (d), for some parameters which include $a=0.5$, the ML estimator is to be favored. This is not true, as it is simply an artefact of the plotting; We use only 100 points for each axis, and therefore the voxels are quite large. With increased resolution, the same plot would show that the naive estimator is the better solution for these parameters.
+
+Lastly, for all other cases that we did not mention, the ML estimator is the better solution for large $n$. Refer to Figure~\ref{fig:mse_naive_better} for the exact shape. This is logical, as the MSE of the naive estimator has a part independent of $n$, whereas the MSE of the ML estimator is entirely divided by $n$. Thus, for large $n$, the ML estimator will go towards zero, whereas the naive estimator will remain constant.
+
+% While Figure~\ref{} clearly shows the complex, non-linear relationship between both MSE expression, we vary the values of $a$ and $\ell$ together. This only shows a slice of the full parameter space. Therefore, we also plot the region where $\pi_{\text{naive}}$ has a lower MSE than $\piml$ in Figure~\ref{} when varying $\pi, a$, and $\ell$ independently.
+
+
+% \begin{figure}[h]
+%     \centering
+%     % \includegraphics[width=0.7\textwidth]{MSE_naive_vs_ml_10.png}
+%     % \includegraphics[width=0.7\textwidth]{MSE_naive_vs_ml_100.png}
+%     \subfloat[For $n = 10$]{\includegraphics[width = 3in]{MSE_naive_vs_ml_10.png}}
+%     % \subcaption{Meow}
+%     \subfloat[For $n = 100$]{\includegraphics[width = 3in]{MSE_naive_vs_ml_100.png}}\\
+%     \subfloat[For $n = 1\ 000$]{\includegraphics[width = 3in]{MSE_naive_vs_ml_1000.png}}
+%     \subfloat[For $n = 10\ 000$]{\includegraphics[width = 3in]{MSE_naive_vs_ml_10000.png}} 
+%     \caption{\textbf{Left}: log MSE of $\piml$ and $\pi_{\text{naive}}$ in 3D. \textbf{Right}: The region indicating whenever an estimator has a lower MSE than the other. In this figure, we link $a$ and $\ell$ together (they are both on the same axis) as the MSE for both estimators depends on only one of them.}
+%     % \caption{In each subfigure, we plot the MSE of $\piml$ and $\pi_{\text{naive}}$ in 3D (left) and indicate with what parameters the MSE of $$}
+%     \label{fig:mse_naive_vs_ml}
+% \end{figure}
+
+
+
+% Let us now analyze the critical points of both MSE expressions, i.e., whenever they are both equal, to determine when one estimator has a lower MSE than the other.
+
+% Let us first solve for $\ell$:
+% \begin{align*}
+%     \text{MSE}(\pi_{\text{naive}}, \pi) &= \text{MSE}(\pi_{\text{ML}}, \pi) \\
+%     \frac{\pi \cdot (1-\ell) - \pi^2 \cdot {(1-\ell)}^2}{n} + \pi^2 \ell^2 &= \frac{\pi - \pi^2}{n} + \frac{a - a^2}{{(2a-1)}^2 \cdot n} \\
+%     \frac{\pi \cdot (1-\ell) - \pi^2 \cdot {(1-\ell)}^2}{n} &= \frac{\pi - \pi^2}{n} + \frac{a - a^2}{{(2a-1)}^2 \cdot n} -  \pi^2 \ell^2 \\
+%     \pi \cdot (1-\ell) - \pi^2 \cdot {(1-\ell)}^2 &= \pi - \pi^ 2+ \frac{a - a^2}{{(2a-1)}^2} -  n\cdot\pi^2 \ell^2 \\ 
+%     \pi - \ell \pi - \pi^2 \cdot \left( 1 + \ell^2 - 2\ell \right) &= \pi - \pi^ 2+ \frac{a - a^2}{{(2a-1)}^2} -  n\cdot\pi^2 \ell^2 &&\mid \div\ \pi \\ 
+%     1 - \ell - \pi \cdot \left( 1 + \ell^2 - 2\ell \right) &= 1 - \pi + \frac{a - a^2}{{(2a-1)}^2\cdot\pi} -  n\cdot\pi \ell^2 \\ 
+%     \ell + \pi\ell^2 + 2\ell \pi + n\cdot\pi \ell^2  &= \frac{a - a^2}{{(2a-1)}^2\cdot\pi}  \\ 
+%     \ell \left( 1 + 2 \pi \right) + \ell^2 \left( \pi + n \cdot \pi \right)  &= \frac{a - a^2}{{(2a-1)}^2\cdot\pi}  \\ 
+%     \ell \frac{\left( 1 + 2 \pi \right)}{\left( \pi + n \cdot \pi \right)}  + \ell^2  &= \frac{a - a^2}{{(2a-1)}^2\cdot\pi \cdot \left( \pi + n \cdot \pi \right)}  \\ 
+%     \ell^2 + \ell \frac{\left( 1 + 2 \pi \right)}{\left( \pi + n \cdot \pi \right)} - \frac{a - a^2}{{(2a-1)}^2\cdot\pi \cdot \left( \pi + n \cdot \pi \right)}  &= 0  \\ 
+%     \ell^2 + \ell \frac{\left( 1 + 2 \pi \right)}{\pi\left( n+1 \right)} - \frac{a - a^2}{{(2a-1)}^2\cdot\pi^2 \cdot \left( n+1 \right)}  &= 0  \\ 
+% \end{align*}
+% where the equation trivialy holds for the following points:
+% \begin{itemize}
+%     \item $\ell = 0, a = 1, \pi\neq 0$
+%     \item $\ell = 0, a = 0, \pi \neq 0$
+%     \item $\ell = 0, n=\infty, a\neq 0.5, \pi \neq 0$
+% \end{itemize}
+% however, for points, we need to solve the quadratic equation. To this end, we use the quadratic formula.
+% We set 
+% \begin{equation*}
+%     p = \frac{\left( 1 + 2 \pi \right)}{\left( \pi + n \cdot \pi \right)} \\
+% \end{equation*}
+% and 
+% \begin{equation*}
+%     q = - \frac{a - a^2}{{(2a-1)}^2\cdot\pi^2 \cdot \left( n+1 \right)}\;.
+% \end{equation*}
+% We therefore have
+% \begin{align*}
+%     \ell_1, \ell_2 &= - \frac{p}{2} \pm \sqrt{{\left( \frac{p}{2} \right)}^2 - q} \\
+%     &= -\frac{ 1 + 2 \pi }{2 \left( \pi + n \cdot \pi \right)} \pm \sqrt{\frac{{\left( 1 + 2 \pi \right)}^2}{{2\left( \pi + n \cdot \pi \right)}^2} + \frac{a - a^2}{{(2a-1)}^2\cdot\pi^2 \cdot \left( n+1 \right)}} \\
+%     % &= -\frac{ 1 + 2 \pi }{2 \left( \pi + n \cdot \pi \right)} \pm \sqrt{\frac{{\left( 1 + 2 \pi \right)}^2}{{2\left( \pi + n \cdot \pi \right)}^2} + \frac{a - a^2}{\left( 2^2a^2+1 - 2a \right)\cdot\pi^2 \cdot \left( n+1 \right)}} \\
+% \end{align*}
+
+% \begin{align*}
+%     \text{MSE}(\pi_{\text{naive}}, \pi) &= \mathbb{E}\left[ {\left( \pi_{\text{naive}} - \mathbb{E}[\pi_{\text{naive}}] \right)}^2 \right] + {\left[ \mathbb{E}[\pi_{\text{naive}}] - \pi_{\text{naive}} \right]}^2 \\
+%     &= \mathbb{E}\left[ \mathbb{E}{[\pi_{\text{naive}}]}^2 + \pi_{\text{naive}}^2 - 2\pi_{\text{naive}}\mathbb{E}[\pi_{\text{naive}}]  \right] + {\left[ \mathbb{E}[\pi_{\text{naive}}] - \pi \right]}^2 \\
+%     &= \mathbb{E}{[\pi_{\text{naive}}]}^2 + \mathbb{E}\left[ \pi_{\text{naive}}^2  \right] -   2\pi_{\text{naive}}\mathbb{E}[\pi_{\text{naive}}] + \mathbb{E}{[\pi_{\text{naive}}]}^2 + \pi^2 - 2\pi  \mathbb{E}[\pi_{\text{naive}}] \\
+%     % &= 2\mathbb{E}{[\pi_{\text{naive}}]}^2 + \mathbb{E}\left[ \pi_{\text{naive}}^2  \right] + \pi^2 - 4\pi  \mathbb{E}[\pi_{\text{naive}}] \\
+%     &= 2\mathbb{E}{[\pi_{\text{naive}}]}^2 + \mathbb{E}\left[ \pi_{\text{naive}}^2  \right] + \pi^2 + \mathbb{E}[\pi_{\text{naive}}]\cdot(2\pi - 2 \pi_{\text{naive}}) \\
+%     % &=  2\mathbb{E}{[\pi_{\text{naive}}]}^2 + \mathbb{E}\left[ \pi_{\text{naive}}^2  \right] + \pi^2 + \mathbb{E}[\pi_{\text{naive}}]\cdot(2\pi - 2 \pi_{\text{naive}}) \\
+%     &\overset{(\ref{eq:expectation_naive_x_i_square_outside})}{=}  2\mathbb{E}{[\pi_{\text{naive}}]}^2 + \frac{\pi \cdot (1- \ell)}{n} + \left( \frac{n-1}{n} \right) \cdot  \pi^2 \cdot {(1- \ell)}^2 + \pi^2 - \mathbb{E}[\pi_{\text{naive}}]\cdot(2\pi + 2 \pi_{\text{naive}}) \\
+%     % &\overset{(\ref{eq:expectation_naive_x_i_square_outside})}{=} 2\mathbb{E}{[\pi_{\text{naive}}]}^2 + \frac{\pi \cdot (1- \ell)}{n} + \left( \frac{n-1}{n} \right) \cdot  \pi^2 \cdot {(1- \ell)}^2 + \\
+%     &\overset{(\ref{eq:naive_expected_value})}{=} 2 {\left[ \pi \cdot (1-\ell) \right]}^2 + \frac{\pi \cdot (1- \ell)}{n} + \left( \frac{n-1}{n} \right) \cdot  \pi^2 \cdot {(1- \ell)}^2 + \pi^2 -\left( \pi \cdot (1-\ell) \right)\cdot(2\pi + 2 \pi_{\text{naive}}) \\
+%     &\overset{(\ref{eq:naive_expected_value})}{=} 2 {\left[ \pi \cdot (1-\ell) \right]}^2 + \frac{\pi \cdot (1- \ell)}{n} + \left( \frac{n-1}{n} \right) \cdot  \pi^2 \cdot {(1- \ell)}^2 + \pi^2 - \left( \pi \cdot (1-\ell) \right)\cdot(2\pi + 2 \pi_{\text{naive}}) \\
+%     &= 2 {\left[ \pi \cdot (1-\ell) \right]}^2 + \frac{\pi \cdot (1- \ell)}{n} + \left( \frac{n-1}{n} \right) \cdot  \pi^2 \cdot {(1- \ell)}^2 + \pi^2 - 2\pi \cdot (1-\ell) \cdot(\pi +  \pi_{\text{naive}}) \\
+%     &= 2 \pi^2 \cdot {(1-\ell)}^2 + \frac{\pi \cdot (1- \ell)}{n} + \left( \frac{n-1}{n} \right) \cdot  \pi^2 \cdot {(1- \ell)}^2 + \pi^2 - 2\pi \cdot (1-\ell) \cdot(\pi +  \pi_{\text{naive}}) \\
+%     &= \left( 1-\ell \right) \cdot \left( 2\pi^2 \cdot (1-\ell) + \frac{\pi}{n} + \left( \frac{n-1}{n} \right) \cdot  \pi^2 \cdot {(1- \ell)} - 2\pi (\pi +  \pi_{\text{naive}}) \right) \\
+%     &= \left( 1-\ell \right) \cdot \left( 2\pi^2 \cdot (1-\ell) + \frac{\pi}{n} + \left( \frac{n-1}{n} \right) \cdot  \pi^2 \cdot {(1- \ell)} - 2\pi^2 -  2\pi\pi_{\text{naive}} \right) \\
+%     &= \pi \cdot \left( 1-\ell \right) \cdot \left( 2\pi \cdot (1-\ell) + \frac{1}{n} + \left( \frac{n-1}{n} \right) \cdot  \pi \cdot {(1- \ell)} - 2\pi -  2\pi_{\text{naive}} \right) \\
+%     &= \pi \cdot \left( 1-\ell \right) \cdot \left( 2\pi -2\pi \ell + \frac{1}{n} + \left( \frac{n-1}{n} \right) \cdot  \pi \cdot {(1- \ell)} - 2\pi -  2\pi_{\text{naive}} \right) \\
+%     % &= 2 \pi^2 \cdot {(1-\ell)}^2 + \frac{\pi \cdot (1- \ell)}{n} + \left( \frac{n-1}{n} \right) \cdot  \pi^2 \cdot {(1- \ell)}^2 + \pi^2 + 2 \pi^2 \cdot (1-\ell) - 2 \pi_{\text{naive}} \pi \cdot (1-\ell) \\
+%     % &= \pi^2 \left( 2 \cdot {(1-\ell)}^2 + \left( \frac{n-1}{n} \right)\cdot {(1-\ell)}^2 + 1 + 2 \cdot (1-\ell)  \right) + \frac{\pi \cdot (1- \ell)}{n} - 2 \pi_{\text{naive}} \pi \cdot (1-\ell) \\
+%     % &= \pi^2 \left( 2- 2\ell^2 + \left( \frac{n-1}{n} \right) - \left( \frac{(n-1) \ell}{n} \right) + 1 + 2-2\ell  \right) + \frac{\pi \cdot (1- \ell)}{n} - 2 \pi_{\text{naive}} \pi \cdot (1-\ell) \\
+%     % &= \pi^2 \left( 5- 2\ell^2 + \left( \frac{n-1}{n} \right) - \left( \frac{(n-1) \ell}{n} \right) -2\ell  \right) + \frac{\pi \cdot (1- \ell)}{n} - 2 \pi_{\text{naive}} \pi \cdot (1-\ell) \\
+%     % % &= 2 \pi^2 \cdot {(1-\ell)}^2 + \frac{\pi \cdot (1- \ell)}{n} + \left( \frac{n-1}{n} \right) \cdot  \pi^2 \cdot {(1- \ell)}^2 + \pi^2 - 4\pi^2 \cdot (1-\ell) \\
+% \end{align*}
+
+% \pagebreak
+% We have
+% \todo[inline]{This is for the non-naive estimator.}
+% \begin{align*}
+%     \text{MSE}(\pi_\text{naive}) &= \mathbb{E}\left[ {(\pi_\text{naive} - \pi)}^2 \right] \\
+%     &= \mathbb{E} \left[ {\left( \frac{\sum_{i=1}^{n} X_i}{n} - \pi \right)}^2 \right] \\
+%     &= \mathbb{E} \left[ \frac{\sum_{i=1}^{n} X_i^2}{n^2} + \pi^2 - 2\pi\frac{\sum_{i=1}^{n} X_i}{n}  \right] \\
+%     &= \mathbb{E} \left[ \frac{\sum_{i=1}^{n} X_i^2}{n^2} \right] + \mathbb{E} \left[ \pi^2 \right] - \mathbb{E} \left[ 2\pi\frac{\sum_{i=1}^{n} X_i}{n} \right] \\
+%     &= \frac{1}{n^2} \sum_{i=1}^{n} \mathbb{E} \left[ X_i^2 \right] + \pi^2 - \frac{2 \pi}{n} \sum_{i=1}^{n} \mathbb{E}[X_i] \\
+%     &\overset{(\ref{eq:expectation_naive_x_i_square_inside})}{=} \frac{1}{n^2} \sum_{i=1}^{n} \left[ (1-a) + (2a - 1) \cdot \pi \right] + \pi^2 - \frac{2 \pi}{n} \sum_{i=1}^{n} \mathbb{E}[X_i] \\
+%     &= \frac{1}{n} \left[ (1-a) + (2a - 1) \cdot \pi \right] + \pi^2 - \frac{2 \pi}{n} \sum_{i=1}^{n} \mathbb{E}[X_i] \\
+%     &\overset{(\ref{eq:expectation_naive_x_i_square_outside})}{=} \frac{1}{n} \left[ (1-a) + (2a - 1) \cdot \pi \right] + \pi^2 - \frac{2 \pi}{n} \sum_{i=1}^{n} \left[ 1 + \pi \left(6a - 4a^2 - 2 \right) + \pi^2 (4 a^2 - 4 a + 1) - 2a + a^2 \right] \\
+%     &= \frac{1}{n} \left[ (1-a) + (2a - 1) \cdot \pi \right] + \pi^2 - 2 \pi \cdot \left[ 1 + \pi \left(6a - 4a^2 - 2 \right) + \pi^2 (4 a^2 - 4 a + 1) - 2a + a^2 \right] \\
+%     &= \frac{(1-a)}{n} + \frac{(2a - 1) \cdot \pi }{n}
+%      + \pi^2 - 2 \pi 
+%     - 2 \pi^2 \left(6a - 4a^2 - 2 \right) - 2 \pi^3 (4 a^2 - 4 a + 1) + 4 \pi a - 2 \pi a^2  \\
+%     &= \pi \left( \frac{2a -1}{n} - 2 + 4a - 2a^2 \right) + \pi^2 (1 - 12a + 4a^2 - 4) + \pi^3 ()
+% \end{align*}
+
+
+\pagebreak
+\section*{Problem 2}
+
+\begin{table}[h]
+    \centering 
+    \begin{tabular}{c c|c c c}
+        \toprule
+        & & \multicolumn{1}{|c|}{$N=500$} & \multicolumn{1}{c|}{$N=1000$} & \multicolumn{1}{c}{$N=5000$} \\
+        \midrule
+        \multicolumn{2}{c|}{${\hat{\mathbf{N}}}$} & $590.45 \variance{311}$ & $1096.62 \variance{286}$ & $5152.14\variance{583}$  \\
+        \multicolumn{2}{c|}{\textbf{Error} (\%)} & $18.09$ & $9.66$ & $3.04$ \\
+        % \hline
+        \multicolumn{2}{c|}{$\hat{\mathbf{\sigma}}_{\hat{N}}$} & $239.58\variance{258}$ & $284.17\variance{116}$ & $566.36\variance{98}$\\
+        % \hline
+        \multirow{2}{*}{\textbf{C.I.}} & $\alpha = 0.05$ & $[299.68\variance{85}; 1322.77\variance{1298}]$ & $[687.34 \variance{137}; 1842.05\variance{609}]$ & $[4179.35\variance{423};6414.78	\variance{804}]$
+        \\
+        % 
+        & $\alpha = 0.01$ & $[250.36\variance{59}; 1740.30\variance{2079}]$ & $[601.62\variance{110}; 2185.30\variance{773}]$ & $[3922.46\variance{383}; 6884.52\variance{890}]$ \\
+        \midrule
+        \multirow{2}{*}{\textbf{Coverage} (\%)} & $\alpha = 0.05$ & $94.50\variance{22.80}$ & $95.70\variance{20.29}$ & $94.70\variance{22.40}$ \\
+        & $\alpha = 0.01$ & $99.40\variance{07.72}$ & $99.20\variance{08.91}$ & $99.20\variance{08.91}$ \\
+        \multicolumn{2}{c|}{\textbf{Bias} ($\approx$)} & $8\ 181$ & $9\ 335$ & $23\ 146$ \\
+        \multicolumn{2}{c|}{\textbf{Variance} ($\approx$)} & $96\ 721$ & $81\ 796$ & $339\ 889$ \\
+        \multicolumn{2}{c|}{\textbf{MSE} ($\approx$)} & $104\ 902$ & $91\ 131$ & $363\ 035$ \\
+        \bottomrule
+    \end{tabular}
+    \caption{Result from $1000$ MC simulations for estimating $\hat{N}$. For each value, we report on the mean (black) and standard deviation (gray). We omit the digits after the decimal point for the standard deviation for brevity.
+    The Error (\%) is the absolute difference between the estimated and the true value of $N$, divided by the true value of $N$. Hence, it measures the relative error of the estimated value to the true value.}
+    \label{tab:problem_2_results}
+\end{table}
+
+\textbf{Observation.}
+We implement the formulas and run the Monte-Carlo simulations for 1000 runs and report the results in Table~\ref{tab:problem_2_results}.
+We first observe that, although the absolute error between the estimated and the true value of $N$ increases with $N$, the relative error decreases when the true $N$ is larger.
+
+Interestingly, the given formula proposed for estimating the variance of $\hat{N}$ is very accurate, as its average value is very close to the computed variance of the Monte-Carlo simulation --- in our case, we report on the standard deviation, which is simply the square root of the variance.
+
+% However, we also observe a high standard deviation of the values returned by the proposed formula. While a variance of zero is not to be expected, we believe that the estimation of the variance is also noisy on its own, and need to be 
+
+Lastly, we computed the averaged confidence intervals across all runs for $\alpha=0.05$ and $\alpha=0.01$. Naturally, the confidence intervals when using $\alpha=0.01$ are larger than when using $\alpha=0.05$, we notice that the standard deviation of the lower confidence decreases when increasing the size of the Confidence Interval (C.I.), whereas the standard deviation of the upper-confidence increases when decreasing $\alpha$. 
+% As the upper- and lower-confidence use different formulas with different structure,  
+
+\textbf{Discussion.}
+
+\todo[inline]{the Biase, Variance, and MSE are computed on the aggregated values from the table manually. Computing them from the true values does slightly change the results (slight increase in MSE), however, the relationship between the three cases ($N=500$, $N=1000$, $N=5000$) remain the same.}
+
+
+
+\pagebreak
+
+\section{Part B: Data Analysis}
+
+\subsection{Data preprocessing and experimental setup}
+
+We combined two Equinox datasets containing change metrics and CK/OO metrics and used the class identifier \texttt{classname} as the join key. Defect-related metadata columns were removed from the feature set, while \texttt{bugs} was retained as the target variable.
+
+We merged two datasets using a one-to-one inner join on \texttt{classname}. After merging, all feature columns and the target were converted to numeric values. The final dataset contains \textbf{324 classes}, \textbf{32 features}, and one target variable.
+
+The dataset was split into a training set (67\%) and a test set (33\%). To preserve the distribution of bug counts, we used stratified random sampling based on the predefined bug-count bins (0, 1--2, 3--5, 6+). The stratification variable was used only for splitting and removed afterwards.
+
+The resulting training and test sets were saved and used consistently in all analyses. Models were selected on the training set and the final selected model was evaluated on the test set.
+
+\subsection{Poisson regression}
+
+\subsubsection{Stepwise model selection}
+
+We applied Poisson regression to model the number of bugs. Since the response variable is count data, a generalized linear model with Poisson family and log link was used. Model selection was performed on the training set using \textbf{forward stepwise selection}, starting from an intercept-only model and using \textbf{AIC} as the selection criterion.
+
+The final model selected by stepwise regression includes the following five predictors:
+\[
+\text{bugs} \sim \textit{cbo} + \textit{numberOfMethodsInherited} + \textit{weightedAgeWithRespectTo}
++ \textit{avgLinesAddedUntil} + \textit{noc}
+\]
+
+The table below shows the estimated coefficients of the selected Poisson regression model, together with standard errors, z-statistics, p-values, and 95\% confidence intervals.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lccccc}
+\hline
+Variable & Coefficient & Std. Error & z & p-value & 95\% CI \\
+\hline
+Intercept & -1.9665 & 0.189 & -10.388 & $<0.001$ & [-2.337, -1.595] \\
+cbo & 0.0454 & 0.004 & 12.728 & $<0.001$ & [0.038, 0.052] \\
+numberOfMethodsInherited & 0.0167 & 0.003 & 5.249 & $<0.001$ & [0.010, 0.023] \\
+weightedAgeWithRespectTo & 0.0117 & 0.002 & 5.241 & $<0.001$ & [0.007, 0.016] \\
+avgLinesAddedUntil & 0.0084 & 0.003 & 3.097 & 0.002 & [0.003, 0.014] \\
+noc & 0.1789 & 0.092 & 1.945 & 0.052 & [-0.001, 0.359] \\
+\hline
+\end{tabular}
+\end{table}
+
+All selected predictors have positive coefficients, indicating that higher structural complexity or more extensive code evolution is associated with a higher expected number of bugs. Most variables are statistically significant at the 5\% level, while \texttt{noc} shows a borderline effect.
+
+The predictive performance of the selected model was evaluated on the test set using Poisson deviance:
+\begin{itemize}
+\item \textbf{Deviance:} 0.81
+\end{itemize}
+
+\subsubsection{LASSO regularization}
+
+To model the number of bugs, we applied Poisson regression with L1 (LASSO) regularization. All predictors were standardized prior to model fitting, which is necessary for LASSO to penalize coefficients in a comparable way. The regularization parameter $\lambda$ was selected on the training set using 5-fold cross-validation, with \textbf{Poisson deviance} as the evaluation criterion.
+
+Cross-validation selected the following value:
+\begin{itemize}
+\item \textbf{Selected $\lambda$:} 0.166
+\end{itemize}
+
+Under the selected regularization strength, the LASSO Poisson model retained only a single non-zero coefficient:
+\begin{itemize}
+\item \textbf{Selected feature:} \texttt{cbo}
+\end{itemize}
+
+The final LASSO-selected model was evaluated on the test set:
+\begin{itemize}
+\item \textbf{Deviance:} 1.279
+\end{itemize}
+
+This deviance value is higher than that obtained by the stepwise Poisson model, indicating a trade-off between model simplicity and predictive accuracy.
+
+\subsubsection{Comparison of stepwise and LASSO}
+
+The stepwise-selected model includes five predictors and achieves a lower test Poisson deviance (0.81), indicating better predictive performance. In contrast, Poisson LASSO yields a much sparser model with only one predictor but results in a higher deviance (1.279). For this dataset, stepwise selection appears more suitable when predictive accuracy is the primary goal.
+
+\subsection{Logistic regression}
+
+\subsubsection{Stepwise model selection}
+
+We constructed a binary target variable \texttt{bugbin}, where $\texttt{bugbin}=1$ if $\texttt{bugs}\ge1$ and 0 otherwise. A logistic regression model was fitted and forward stepwise selection using AIC was performed on the training set.
+
+The final model includes the following predictors:
+\begin{itemize}
+\item \texttt{cbo}, \texttt{numberOfMethodsInherited}, \texttt{weightedAgeWithRespectTo},
+\texttt{numberOfRefactoringsUntil}, \texttt{avgLinesRemovedUntil}, \texttt{noc}, \texttt{dit}
+\end{itemize}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lccccc}
+\hline
+Variable & Coef. & Std. Err. & z & p-value & 95\% CI \\
+\hline
+Intercept & -3.8173 & 0.629 & -6.069 & $<0.001$ & [-5.050, -2.585] \\
+cbo & 0.1191 & 0.025 & 4.845 & $<0.001$ & [0.071, 0.167] \\
+numberOfMethodsInherited & 0.0296 & 0.021 & 1.440 & 0.150 & [-0.011, 0.070] \\
+weightedAgeWithRespectTo & 0.0168 & 0.006 & 2.894 & 0.004 & [0.005, 0.028] \\
+numberOfRefactoringsUntil & -1.3044 & 0.525 & -2.486 & 0.013 & [-2.333, -0.276] \\
+avgLinesRemovedUntil & 0.0643 & 0.024 & 2.675 & 0.007 & [0.017, 0.111] \\
+noc & 0.7458 & 0.345 & 2.161 & 0.031 & [0.069, 1.422] \\
+dit & 0.8081 & 0.416 & 1.944 & 0.052 & [-0.007, 1.623] \\
+\hline
+\end{tabular}
+\end{table}
+
+The final model was evaluated on the test set:
+\begin{itemize}
+\item \textbf{Accuracy:} 0.720
+\end{itemize}
+
+\subsubsection{LASSO regularization}
+
+In the \texttt{sklearn} implementation, the regularization strength is controlled by parameter $C$ (with $\lambda = 1/C$). Cross-validation selected a large $C$, resulting in weak regularization and a model retaining many predictors.
+
+The test-set performance was:
+\begin{itemize}
+\item \textbf{Accuracy:} 0.729
+\end{itemize}
+
+\subsubsection{Comparison of stepwise and LASSO}
+
+Both approaches achieved similar classification performance. Stepwise selection yields a more interpretable and compact model, while logistic LASSO slightly improves accuracy at the cost of reduced sparsity.
+\pagebreak
+\section*{Statement on the Useage of Gen. AI}
+\begin{itemize}
+    \item \textbf{Felix Céard-Falkenberg}\newline
+    Unless stated otherwise, all code, text, and math derivations have been entirely thought and written by me with no external help --- both for gen. AI and wolframalpha anc co.
+
+We used Claude 4.5 Opus for generating the plots for Figure~\ref{fig:mse_naive_better} as the plot is not a core of the assignment, and only aids in understanding our own results. Note that we (heavily) modified the code generated by Claude.\
+    \item \textbf{Yiquan Hu}\newline
+    For Part B, we used ChatGPT to generate required code for stepwise selection with the permissions stated in the assignment instructions and also consulted ChatGPT for general suggestions on parameter adjustment. All analysis, results and interpretations were produced by us. We only used ChatGPT lightly refine the academic word of some sentences without adding new content.
+    
+\end{itemize}
+
+
+
+% I used ChatGPT to help find literature on the properties of integration, differentiation.
+
+% Furthermore, when researching for denoising algorithms, I used ChatGPT to get a general overview of the available general denoising algorithms. After finding the Bayesian denoising algorithm, I used Claude 4.5 Sonnet to write the code for the Bayesian denoising algorithm (based on existing code for Bayesian denoising implemented for 2D images). As the exact algorithm is not at the core of the assignment or the course, and that the results of both denoising methods are very similar, I believe that this usage is acceptable.
+
+\end{document}
